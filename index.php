@@ -152,14 +152,25 @@ else {
     setcookie('biog_error', '', 100000);
     setcookie('check_error', '', 100000);
   }
+//   function e($string)
+// {
+//     return htmlspecialchars($string);
+// }
   // Проверяем меняются ли ранее сохраненные данные или отправляются новые.
   if (!empty($_COOKIE[session_name()]) && !empty($_SESSION['login'])) {
     // TODO: перезаписать данные в БД новыми данными,
     // кроме логина и пароля.
     try {
-      $stmt = $db->prepare("UPDATE main SET name = :name, email = :email, data = :data, gender = :gender, limbs = :limbs, biog = :biog WHERE username = :username");
-      $stmt->execute(array(':name' => $_POST['name'], ':email' => $_POST['email'], ':data' => $_POST['date'],
-      ':gender' => $_POST['gender'],':limbs' => $_POST['limbs'],':biog' => $_POST['biog'],':username' => $_SESSION['login']));
+      $name = htmlspecialchars($_POST['name']);
+      $email = htmlspecialchars($_POST['email']);
+      $data = htmlspecialchars($_POST['date']);
+      $biog = htmlspecialchars($_POST['biog']);
+      $limbs = intval($_POST['limbs']);
+      $gender = htmlspecialchars($_POST['gender']);
+      $stmt = $db->prepare("UPDATE main SET name = :name, email = :email, data = :data, 
+      gender = :gender, limbs = :limbs, biog = :biog WHERE username = :username");
+      $stmt->execute(array(':name' => $name, ':email' => $email, ':data' => $data,
+      ':gender' => $gender,':limbs' => $limbs,':biog' => $biog,':username' => $_SESSION['login']));
       $stmt = $db->prepare("SELECT AppId from main WHERE username = :username");
       $stmt->execute([':username' => $_SESSION['login']]);
       $res = $stmt->fetch();
@@ -190,9 +201,15 @@ else {
     setcookie('login', $login);
     setcookie('pass', $pass);
     try {
+      $name = htmlspecialchars($_POST['name']);
+      $email = htmlspecialchars($_POST['email']);
+      $data = htmlspecialchars($_POST['date']);
+      $biog = htmlspecialchars($_POST['biog']);
+      $limbs = intval($_POST['limbs']);
+      $gender = htmlspecialchars($_POST['gender']);
       $stmt = $db->prepare("INSERT INTO main(name, email, data, gender, limbs, biog, username, password)
-      VALUES('{$_POST['name']}', '{$_POST['email']}', '{$_POST['date']}', '{$_POST['gender']}', '{$_POST['limbs']}','{$_POST['biog']}', '$login', '$hash')");
-      $stmt->execute([$_POST['name'], $_POST['email'], $_POST['date'], $_POST['gender'], $_POST['limbs'], $_POST['biog']]);
+      VALUES(:name, :email, :data, :gender, :limbs, :biog, :login, :pass)");
+      $stmt->execute(array(":name" => $name, ":email" => $email, ":data" => $data,":gender" => $gender,":limbs" => $limbs,":biog" => $biog,":login" => $login,":pass" => $hash));
       $stmt = $db->prepare("SELECT LAST_INSERT_ID()  as AppId");
       $stmt->execute();
       $result = $stmt->fetch();
@@ -219,4 +236,5 @@ else {
   // Делаем перенаправление.
   header('Location: ./');
 }
+ 
  
